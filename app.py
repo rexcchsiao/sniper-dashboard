@@ -15,7 +15,7 @@ import time
 
 # --- 1. 頁面設定 ---
 st.set_page_config(
-    page_title="Sniper Pro V10",
+    page_title="Sniper Pro V10.1",
     page_icon="🦅",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -161,14 +161,13 @@ def generate_ai_analysis(mode, ticker_full_name, df=None, info=None, financials=
     except Exception as e:
         return f"❌ AI 連線失敗: {str(e)}"
 
-# --- 5. 側邊欄邏輯 (混合查詢) ---
+# --- 5. 側邊欄邏輯 (混合查詢修復版) ---
 with st.sidebar:
-    st.title("🦅 Sniper Pro V10")
+    st.title("🦅 Sniper Pro V10.1")
     if st.button("🔄 刷新數據", use_container_width=True):
         st.cache_data.clear()
         st.rerun()
     
-    # API Key
     if "GEMINI_API_KEY" in st.secrets:
         gemini_key = st.secrets["GEMINI_API_KEY"]
     else:
@@ -176,42 +175,46 @@ with st.sidebar:
 
     st.markdown("---")
     
-    # 🔥 重點 1：手動查詢區
+    # 🔥 UI 優化：手動輸入與列表並存
     st.subheader("🔍 股票查詢")
-    manual_input = st.text_input("輸入代號 (例如 2330)", placeholder="輸入代號...")
+    manual_input = st.text_input("輸入代號 (留空則使用庫存清單)", placeholder="例如 2330")
     
     st.subheader("📂 庫存監控")
     ticker_list = get_positions()
     
-    # 決定最終要看哪一檔股票
+    # 這裡做了修改：無論有沒有輸入，Radio Button 都會顯示
+    # 這樣列表就不會消失了
+    selected_option = None
+    if ticker_list:
+        selected_option = st.radio("庫存列表", ticker_list, label_visibility="collapsed")
+    else:
+        st.info("目前無庫存")
+
+    # 決定最終代號
     final_ticker_code = None
     final_ticker_name = None
 
     if manual_input:
-        # 如果有手動輸入，優先使用
+        # 有輸入字，優先使用手動輸入
         clean_code = manual_input.strip()
         final_ticker_code = clean_code
-        # 嘗試查名稱
         try:
             name = twstock.codes[clean_code].name
         except:
             name = clean_code
         final_ticker_name = f"{clean_code} {name}"
-    
-    elif ticker_list:
-        # 沒手動輸入，才看庫存清單
-        selected_option = st.radio("庫存列表", ticker_list, label_visibility="collapsed")
+    elif selected_option:
+        # 沒輸入字，使用選單
         final_ticker_code = selected_option.split(" ")[0]
         final_ticker_name = selected_option
-    
     else:
-        # 都沒有 (測試用)
+        # 什麼都沒有
         final_ticker_code = "2330"
-        final_ticker_name = "2330 台積電"
+        final_ticker_name = "2330 台積電 (測試)"
 
-# --- 6. 主畫面邏輯 (狀態管理) ---
+# --- 6. 主畫面邏輯 ---
 if final_ticker_code:
-    # 初始化 Session State (確保 AI 報告可以被記住)
+    # Session State 初始化
     if 'current_ticker' not in st.session_state:
         st.session_state.current_ticker = ""
         st.session_state.tech_report = None
@@ -220,7 +223,7 @@ if final_ticker_code:
         st.session_state.info = None
         st.session_state.financials = None
 
-    # 🔥 重點 2：切換股票時，清空舊報告
+    # 切換股票時重置
     if st.session_state.current_ticker != final_ticker_code:
         st.session_state.current_ticker = final_ticker_code
         st.session_state.tech_report = None
@@ -228,23 +231,20 @@ if final_ticker_code:
         st.session_state.df = None
         st.session_state.info = None
         st.session_state.financials = None # 清空財報
-        # 重新抓數據
+        
         with st.spinner('正在載入數據...'):
             st.session_state.df = get_technical_data(final_ticker_code)
             st.session_state.info = get_company_info_safe(final_ticker_code)
 
-    # 顯示 Header
     st.header(f"📊 {final_ticker_name}")
 
     if st.session_state.df is None:
         st.error("❌ 無法抓取資料，請確認代號正確。")
     else:
-        # 取出 Session 中的資料
         df = st.session_state.df
         info = st.session_state.info
         last = df.iloc[-1]
         
-        # 頂部儀表板
         c1, c2, c3, c4, c5 = st.columns(5)
         def safe_get(col, fmt="{:.1f}"):
             if col in df.columns and not pd.isna(last[col]): return fmt.format(last[col])
@@ -260,10 +260,8 @@ if final_ticker_code:
 
         st.markdown("---")
 
-        # 頁籤
         tabs = st.tabs(["📈 K線/籌碼", "🌊 進階指標", "🤖 技術 AI", "💰 財報 AI"])
 
-        # Tab 1
         with tabs[0]:
             fig = make_subplots(rows=2, cols=1, shared_xaxes=True, row_width=[0.2, 0.7], vertical_spacing=0.03)
             fig.add_trace(go.Candlestick(x=df.index, open=df['Open'], high=df['High'], low=df['Low'], close=df['Close'], name='K線'), row=1, col=1)
@@ -276,7 +274,6 @@ if final_ticker_code:
             fig.update_layout(height=550, template="plotly_dark", xaxis_rangeslider_visible=False, margin=dict(l=0,r=0,t=0,b=0))
             st.plotly_chart(fig, use_container_width=True)
 
-        # Tab 2
         with tabs[1]:
             col1, col2 = st.columns(2)
             with col1:
@@ -296,32 +293,26 @@ if final_ticker_code:
                 fig_bias.update_layout(height=350, template="plotly_dark", margin=dict(l=0,r=0,t=30,b=0), showlegend=False)
                 st.plotly_chart(fig_bias, use_container_width=True)
 
-        # Tab 3: 技術 AI (使用 Session State)
+        # Tab 3: 技術 AI (優化跳頁問題)
         with tabs[2]:
             st.markdown("### 🤖 技術面診斷")
-            
-            # 🔥 檢查：如果 Session 裡有報告，直接顯示
             if st.session_state.tech_report:
                 st.markdown(st.session_state.tech_report)
-                if st.button("🔄 重新分析", key="btn_tech_retry"):
+                if st.button("🔄 重新分析 (技術)", key="btn_tech_retry"):
                     st.session_state.tech_report = generate_ai_analysis("technical", final_ticker_name, df=df, info=info, api_key=gemini_key)
                     st.rerun()
             else:
-                # 如果沒有報告，顯示按鈕
                 if st.button("✨ 啟動技術分析", key="btn_tech"):
                     report = generate_ai_analysis("technical", final_ticker_name, df=df, info=info, api_key=gemini_key)
-                    st.session_state.tech_report = report # 存起來！
-                    st.rerun() # 強制刷新顯示
+                    st.session_state.tech_report = report
+                    st.rerun() # 寫入後立刻刷新，確保 UI 同步
 
-        # Tab 4: 財報 AI (使用 Session State)
+        # Tab 4: 財報 AI
         with tabs[3]:
             st.markdown(f"### 💰 {final_ticker_name} 財報體質診斷")
-            
-            # 🔥 檢查：如果 Session 裡有報告，直接顯示
             if st.session_state.fund_report:
                 st.markdown(st.session_state.fund_report)
-                if st.button("🔄 重新分析", key="btn_fund_retry"):
-                     # 重新下載財報
+                if st.button("🔄 重新分析 (財報)", key="btn_fund_retry"):
                     inc, bal, cash = get_financial_data(final_ticker_code)
                     st.session_state.financials = (inc, bal, cash)
                     st.session_state.fund_report = generate_ai_analysis("fundamental", final_ticker_name, info=info, financials=st.session_state.financials, api_key=gemini_key)
@@ -335,5 +326,5 @@ if final_ticker_code:
                             st.session_state.financials = (inc, bal, cash)
                     
                     report = generate_ai_analysis("fundamental", final_ticker_name, info=info, financials=st.session_state.financials, api_key=gemini_key)
-                    st.session_state.fund_report = report # 存起來！
+                    st.session_state.fund_report = report
                     st.rerun()
