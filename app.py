@@ -13,6 +13,27 @@ import google.generativeai as genai
 import twstock
 import time
 
+def get_yfinance_suffix(ticker):
+    """
+    判斷股票代號是上市還是上櫃，回傳對應的 yfinance 後綴
+    上市 -> .TW
+    上櫃 -> .TWO
+    """
+    try:
+        # 先嘗試用 twstock 查詢
+        stock_info = twstock.codes.get(ticker)
+        if stock_info:
+            if stock_info.market == '上櫃':
+                return ".TWO"
+            else:
+                return ".TW" # 上市或興櫃(yfinance 興櫃支援度較差，暫設 .TW)
+        
+        # 如果 twstock 查不到 (例如 ETF)，通常 ETF 大多是上市 (.TW)，
+        # 但也有少數上櫃 ETF。這裡做一個簡單的 fallback 嘗試
+        return ".TW" 
+    except:
+        return ".TW" # 預設回傳 .TW
+
 # --- 1. 頁面設定 (手機優先) ---
 st.set_page_config(
     page_title="Sniper Mobile V12.2",
@@ -139,8 +160,15 @@ def get_positions():
 # --- 3. 數據核心 ---
 def get_technical_data(ticker):
     try:
-        stock = yf.Ticker(ticker + ".TW")
+        suffix = get_yfinance_suffix(ticker)
+        stock = yf.Ticker(ticker + suffix)
         df = stock.history(period="1y")
+        
+        # 如果 .TW 抓不到，嘗試 .TWO (針對 twstock 查不到的漏網之魚)
+        if df.empty and suffix == ".TW":
+            stock = yf.Ticker(ticker + ".TWO")
+            df = stock.history(period="1y")
+
         if df.empty: return None
         
         try: df.ta.macd(fast=12, slow=26, signal=9, append=True)
@@ -163,12 +191,28 @@ def get_technical_data(ticker):
     except: return None
 
 def get_company_info_safe(ticker):
-    try: return yf.Ticker(ticker + ".TW").info
+    try: 
+        suffix = get_yfinance_suffix(ticker)
+        info = yf.Ticker(ticker + suffix).info
+        # 如果 info 是空的或沒有 trailingPE，嘗試切換後綴再試一次
+        if not info or 'trailingPE' not in info:
+             alt_suffix = ".TWO" if suffix == ".TW" else ".TW"
+             alt_info = yf.Ticker(ticker + alt_suffix).info
+             if alt_info and 'trailingPE' in alt_info:
+                 return alt_info
+        return info
     except: return {} 
 
 def get_financial_data(ticker):
     try:
-        stock = yf.Ticker(ticker + ".TW")
+        suffix = get_yfinance_suffix(ticker)
+        stock = yf.Ticker(ticker + suffix)
+        
+        # 簡單檢查是否有數據，若無則切換後綴
+        if stock.income_stmt is None or stock.income_stmt.empty:
+             alt_suffix = ".TWO" if suffix == ".TW" else ".TW"
+             stock = yf.Ticker(ticker + alt_suffix)
+             
         return stock.income_stmt, stock.balance_sheet, stock.cashflow
     except: return None, None, None
 
@@ -398,3 +442,4 @@ if final_ticker_code:
                     report = generate_ai_analysis("fundamental", final_ticker_name, info=info, financials=st.session_state.financials, api_key=gemini_key)
                     st.session_state.fund_report = report
                     st.rerun()
+
