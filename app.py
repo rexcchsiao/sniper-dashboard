@@ -15,35 +15,35 @@ import time
 
 # --- 1. 頁面設定 (手機優先) ---
 st.set_page_config(
-    page_title="Sniper Mobile V12",
+    page_title="Sniper Mobile V12.1",
     page_icon="📱",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# --- CSS 魔改區 (V12.0 強制網格版) ---
+# --- CSS 魔改區 (V12.1 佈局微調) ---
 st.markdown("""
 <style>
     .stApp { background-color: #0E1117; }
     
-    /* 移除頂部留白 */
+    /* 1. 頂部間距微調，讓導航列更貼頂 */
     .block-container {
-        padding-top: 0.5rem !important;
-        padding-bottom: 2rem !important;
+        padding-top: 1rem !important;
+        padding-bottom: 3rem !important;
         padding-left: 0.5rem !important;
         padding-right: 0.5rem !important;
     }
 
-    /* 自定義數據卡片 CSS (取代 st.metric) */
+    /* 2. 數據網格 CSS */
     .metric-grid-3 {
         display: grid;
-        grid-template-columns: repeat(3, 1fr); /* 強制 3 欄 */
+        grid-template-columns: repeat(3, 1fr);
         gap: 6px;
         margin-bottom: 6px;
     }
     .metric-grid-2 {
         display: grid;
-        grid-template-columns: repeat(2, 1fr); /* 強制 2 欄 */
+        grid-template-columns: repeat(2, 1fr);
         gap: 6px;
         margin-bottom: 10px;
     }
@@ -77,7 +77,7 @@ st.markdown("""
     .down-color { color: #FF5252; }
     .no-color { color: #B0B0B0; }
 
-    /* 調整 Tab 樣式 */
+    /* 3. Tab 與其他樣式 */
     .stTabs [data-baseweb="tab-list"] { 
         gap: 2px; 
         overflow-x: auto;
@@ -88,7 +88,12 @@ st.markdown("""
         height: 35px;
         padding: 0px 10px;
         font-size: 14px;
-        flex: 1 0 auto; /* 讓 Tab 均分或自適應 */
+        flex: 1 0 auto;
+    }
+    
+    /* 4. 隱藏 Selectbox 的 label 空間，讓它更緊湊 */
+    div[data-testid="stSelectbox"] label {
+        display: none;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -197,7 +202,7 @@ def generate_ai_analysis(mode, ticker_full_name, df=None, info=None, financials=
             return response.text
     except Exception as e: return f"❌: {str(e)}"
 
-# --- 5. 導航邏輯 ---
+# --- 5. 導航邏輯 (V12.1: 永遠顯示導航列) ---
 with st.sidebar:
     st.title("⚙️ 設定")
     if "GEMINI_API_KEY" in st.secrets:
@@ -206,19 +211,35 @@ with st.sidebar:
     else:
         gemini_key = st.text_input("Gemini API Key", type="password")
 
-# 主畫面頂部導航
-with st.expander("🔍 股票選單", expanded=False):
-    c_btn, c_sel = st.columns([1, 3])
-    with c_btn:
-        if st.button("🔄", use_container_width=True):
-            st.cache_data.clear()
-            st.rerun()
-    with c_sel:
-        ticker_list = get_positions()
-        selected_option = st.selectbox("庫存", ticker_list, label_visibility="collapsed") if ticker_list else None
-        
-    manual_input = st.text_input("代號查詢", placeholder="例如 2330", label_visibility="collapsed")
+# 🔥 改動區：不再使用 expander，直接用 columns 顯示
+# Row 1: 刷新按鈕 (窄) + 庫存選單 (寬)
+c_nav_1, c_nav_2 = st.columns([1, 4], gap="small")
 
+with c_nav_1:
+    if st.button("🔄", use_container_width=True):
+        st.cache_data.clear()
+        st.rerun()
+
+with c_nav_2:
+    ticker_list = get_positions()
+    selected_option = None
+    if ticker_list:
+        selected_option = st.selectbox(
+            "inventory", 
+            ticker_list, 
+            label_visibility="collapsed" # 隱藏標籤，看起來更乾淨
+        )
+    else:
+        st.info("無庫存")
+
+# Row 2: 手動查詢 (獨立一行，避免太擠)
+manual_input = st.text_input(
+    "search", 
+    placeholder="或輸入代號查詢 (如 2330)", 
+    label_visibility="collapsed"
+)
+
+# 決定代號邏輯
 final_ticker_code = None
 final_ticker_name = None
 
@@ -235,7 +256,7 @@ else:
     final_ticker_code = "2330"
     final_ticker_name = "2330 台積電 (Demo)"
 
-# --- 6. 內容顯示區 (重頭戲) ---
+# --- 6. 內容顯示區 ---
 if final_ticker_code:
     # Session State
     if 'current_ticker' not in st.session_state:
@@ -267,7 +288,7 @@ if final_ticker_code:
         info = st.session_state.info
         last = df.iloc[-1]
         
-        # --- 數據格式化 ---
+        # 數據處理
         def safe_num(col): 
             if col in df.columns and not pd.isna(last[col]): return last[col]
             return 0
@@ -277,7 +298,6 @@ if final_ticker_code:
         change = close - prev_close
         pct = (change / prev_close) * 100
         
-        # 顏色邏輯
         color_cls = "up-color" if change > 0 else "down-color" if change < 0 else "no-color"
         sign = "+" if change > 0 else ""
         
@@ -286,8 +306,7 @@ if final_ticker_code:
         bias = safe_num('BIAS_20')
         pe = info.get('trailingPE', '-') if info else '-'
 
-        # --- 🔥 V12.0 核心：HTML 強制網格佈局 ---
-        # 第一排：現價、MFI、RSI (強制 3 欄)
+        # HTML 網格佈局
         st.markdown(f"""
         <div class="metric-grid-3">
             <div class="metric-card">
@@ -306,10 +325,6 @@ if final_ticker_code:
                 <div class="metric-delta no-color">動能</div>
             </div>
         </div>
-        """, unsafe_allow_html=True)
-
-        # 第二排：乖離率、本益比 (強制 2 欄)
-        st.markdown(f"""
         <div class="metric-grid-2">
             <div class="metric-card">
                 <div class="metric-label">BIAS (乖離率)</div>
@@ -324,7 +339,6 @@ if final_ticker_code:
         </div>
         """, unsafe_allow_html=True)
 
-        # 分頁區
         tabs = st.tabs(["K線", "指標", "技AI", "財AI"])
 
         with tabs[0]:
