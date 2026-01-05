@@ -5,3 +5,4 @@ plotly
 gspread
 oauth2client
 pandas_ta
+google-generativeai
