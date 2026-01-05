@@ -7,3 +7,4 @@ oauth2client
 pandas_ta
 google-generativeai>=0.7.0
 tabulate
+twstock
