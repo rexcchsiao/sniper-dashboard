@@ -9,12 +9,12 @@ from oauth2client.service_account import ServiceAccountCredentials
 import json
 import re
 import datetime
-import google.generativeai as genai # 👈 Google AI 核心庫
+import google.generativeai as genai
 
 # --- 1. 頁面設定 ---
 st.set_page_config(
-    page_title="Sniper Pro (Gemini Edition)",
-    page_icon="♊", # 換成 Gemini 的 Logo 意象
+    page_title="Sniper Pro (Gemini 3 Ready)",
+    page_icon="♊",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -39,7 +39,7 @@ st.markdown("""
         color: #FAFAFA;
     }
     .stTabs [aria-selected="true"] {
-        background-color: #4285F4; /* Google Blue */
+        background-color: #8E44AD; /* Gemini 3 Purple */
         color: white;
     }
 </style>
@@ -79,7 +79,6 @@ def get_full_data(ticker):
     df = stock.history(period="1y")
     if df.empty: return None, None
 
-    # 計算指標
     macd = df.ta.macd(fast=12, slow=26, signal=9)
     df = pd.concat([df, macd], axis=1)
     stoch = df.ta.stoch(k=9, d=3)
@@ -90,7 +89,7 @@ def get_full_data(ticker):
 
     return df, stock.info
 
-# --- 4. Gemini AI 報告生成引擎 (V6.0) ---
+# --- 4. Gemini AI 報告生成引擎 (V7.0 次世代版) ---
 def generate_gemini_report(ticker, df, info, api_key=None):
     # 準備數據摘要
     last_close = df['Close'].iloc[-1]
@@ -101,62 +100,69 @@ def generate_gemini_report(ticker, df, info, api_key=None):
     d_val = df['STOCHd_9_3_3'].iloc[-1]
     vol_ratio = df['Volume'].iloc[-1] / df['Volume'].iloc[-5:].mean()
     
-    # A. 呼叫 Gemini API (如果 Key 存在)
+    # A. 呼叫 Gemini API
     if api_key:
         try:
-            # 設定 API
             genai.configure(api_key=api_key)
             
-            # 使用 Gemini 1.5 Flash (速度快、免費額度高)
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            
             prompt = f"""
-            你是一位華爾街等級的台股分析師。請根據以下即時數據，為股票代號 {ticker} 撰寫一份精簡但犀利的分析報告。
-            請使用 Markdown 格式，並包含表情符號。
+            你是一位使用 Gemini 3 的頂尖台股分析師。請根據以下即時數據，為 {ticker} 撰寫一份精簡但犀利的分析報告。
             
             [即時數據]
-            - 收盤價: {last_close:.1f} (漲跌幅 {change_pct:.2f}%)
-            - RSI(14): {rsi:.1f} (強弱指標)
-            - MACD柱狀體: {macd_hist:.2f} (趨勢動能)
+            - 收盤價: {last_close:.1f} ({change_pct:.2f}%)
+            - RSI(14): {rsi:.1f}
+            - MACD柱狀: {macd_hist:.2f}
             - KD值: K={k_val:.1f}, D={d_val:.1f}
-            - 量能倍數: {vol_ratio:.2f} (今日量/5日均量)
-            - 公司簡介: {info.get('longBusinessSummary', '無')}
+            - 量能倍數: {vol_ratio:.2f}
+            - 簡介: {info.get('longBusinessSummary', '無')}
             
-            [報告要求]
-            1. 第一段：用一句話給出「買進/觀望/賣出」的明確評級。
-            2. 第二段：技術面分析 (請解讀指標背後的意義，不要只列數字)。
-            3. 第三段：量價結構與籌碼解讀。
-            4. 第四段：給出具體的操作區間 (支撐位/壓力位預估)。
+            [要求]
+            1. 第一段：直接給出評級 (買進/觀望/賣出)。
+            2. 第二段：技術指標解讀。
+            3. 第三段：量價結構分析。
+            4. 第四段：支撐壓力操作建議。
             """
+
+            # 🔥 V7.0 重大更新：升級模型版本
+            # 優先使用 gemini-2.5-flash (目前的穩定高速版)
+            # 如果您想用最新的，可以改成 'gemini-3-flash-preview'
+            model_name = 'gemini-2.5-flash' 
             
-            with st.spinner('♊ Gemini 正在思考中...'):
-                response = model.generate_content(prompt)
-                return response.text
+            try:
+                model = genai.GenerativeModel(model_name)
+                with st.spinner(f'♊ {model_name} 正在運算中...'):
+                    response = model.generate_content(prompt)
+                    return response.text
+            except Exception as e:
+                return f"❌ 模型連線失敗 ({model_name}): {e} \n(請檢查 API Key 或切換模型版本)"
                 
         except Exception as e:
-            return f"Gemini 連線失敗: {e} (將切換回備用模式)"
+            return f"❌ Gemini 連線失敗: {str(e)}"
 
-    # B. 備用專家系統 (無 Key 時使用)
+    # B. 備用專家系統
     trend_str = "多頭排列" if last_close > df['Close'].rolling(20).mean().iloc[-1] else "弱勢整理"
     return f"""
     ### 🤖 系統自動診斷 (未啟用 Gemini)
-    
     * **趨勢:** {trend_str}
     * **RSI:** {rsi:.1f}
     * **MACD:** {macd_hist:.2f}
-    
-    *(請在側邊欄輸入 Gemini API Key 以解鎖完整 AI 分析功能)*
+    *(請在 Secrets 設定 GEMINI_API_KEY 以解鎖完整 AI)*
     """
 
 # --- 5. 側邊欄 ---
 with st.sidebar:
-    st.title("♊ Sniper Pro")
-    if st.button("🔄 刷新數據"):
+    st.title("♊ Sniper Pro V7")
+    if st.button("🔄 刷新數據", use_container_width=True):
         st.cache_data.clear()
         st.rerun()
     
-    # Gemini Key 輸入框
-    gemini_key = st.text_input("Gemini API Key (選填)", type="password", help="填入後啟用 Gemini 1.5 Flash 模型")
+    # 🔥 自動讀取 Secrets 裡的 Key
+    if "GEMINI_API_KEY" in st.secrets:
+        gemini_key = st.secrets["GEMINI_API_KEY"]
+        st.success("✅ 已載入 Gemini API Key")
+    else:
+        gemini_key = st.text_input("Gemini API Key", type="password")
+        st.info("💡 提示：將 Key 加入 Secrets 可免手動輸入")
     
     ticker_list = get_positions()
     if ticker_list:
@@ -174,7 +180,7 @@ if selected_ticker:
         st.session_state.data_fetched = False
         st.session_state.current_ticker = selected_ticker
 
-    st.header(f"📊 {selected_ticker} 戰情中心 (Gemini Powered)")
+    st.header(f"📊 {selected_ticker} 戰情中心")
     
     if not st.session_state.data_fetched:
         with st.spinner('正在載入數據...'):
@@ -237,9 +243,9 @@ if selected_ticker:
                     report = generate_gemini_report(selected_ticker, df, info, gemini_key)
                     st.markdown(report)
                 else:
-                    st.info("點擊按鈕，讓 Google Gemini 為您解讀盤勢。")
+                    st.info(f"點擊按鈕，讓 Google Gemini (v2.5/3.0) 為您解讀盤勢。")
             else:
-                st.warning("請先在左側輸入 Gemini API Key。")
+                st.warning("未偵測到 API Key。請在 Secrets 中設定或於側邊欄輸入。")
 
         with tabs[3]:
             st.dataframe(pd.DataFrame({
