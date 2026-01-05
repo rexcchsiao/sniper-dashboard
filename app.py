@@ -19,32 +19,46 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- 2. 連線 Google Sheet (雲端密鑰版) ---
+# --- 2. 連線 Google Sheet (增強容錯版) ---
 @st.cache_data(ttl=60)
 def get_positions():
     try:
-        # 從 Streamlit Secrets 讀取 JSON 字串
-        key_dict = json.loads(st.secrets["G_SHEET_KEY"])
+        # 1. 讀取 Secrets 字串
+        raw_json_str = st.secrets["G_SHEET_KEY"]
         
+        # 2. 🔥 關鍵修正：清洗隱形控制字元
+        # 很多時候複製貼上會把 \n 變成真正的換行，或者帶有 tab
+        # 我們用 strict=False 讓 JSON 解析器放寬標準
+        key_dict = json.loads(raw_json_str, strict=False)
+        
+        # 3. 再次檢查 private_key (雙重保險)
+        # 確保私鑰格式正確，將多餘的脫逸字元修復
+        if 'private_key' in key_dict:
+             key_dict['private_key'] = key_dict['private_key'].replace('\\n', '\n')
+
         scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
         creds = ServiceAccountCredentials.from_json_keyfile_dict(key_dict, scope)
         client = gspread.authorize(creds)
         
-        # 請確認你的 Sheet 名稱是否為 "Sniper"
+        # 連線 Sheet
         sheet = client.open_by_url(st.secrets["SHEET_URL"]).worksheet('Sniper')
         
-        # 讀取整張表
+        # 讀取資料
         data = sheet.get_all_values()
-        # 轉成 DataFrame，第一列當標題
         df = pd.DataFrame(data[1:], columns=data[0])
         
-        # 過濾出 "In Position" 的股票
-        # 如果你想看全部，就把下面這行註解掉
-        in_position_df = df[df['狀態'] == 'In Position']
+        # 過濾 "In Position"
+        # ⚠️ 注意：如果你現在 Sheet 裡沒有 "In Position" 的股票
+        # 下面這行會回傳空清單，導致你看到 "目前無庫存"
+        # 為了測試，你可以暫時把過濾註解掉，看能不能印出所有股票
+        # in_position_df = df[df['狀態'] == 'In Position'] 
         
-        return in_position_df['代號'].astype(str).tolist()
+        # --- 暫時改成回傳全部 (方便你確認連線成功) ---
+        return df['代號'].astype(str).tolist() 
+        
     except Exception as e:
-        st.error(f"Google Sheet 連線錯誤: {e}")
+        # 這裡會印出更詳細的錯誤，方便我們除錯
+        st.error(f"Google Sheet 連線錯誤詳細資訊: {str(e)}")
         return []
 
 # --- 3. 抓取股價資料 ---
@@ -96,4 +110,5 @@ if selected_ticker:
             st.plotly_chart(fig, use_container_width=True)
             
     except Exception as e:
+
         st.error(f"發生錯誤: {e}")
