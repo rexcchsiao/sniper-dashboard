@@ -15,20 +15,20 @@ import time
 
 # --- 1. 頁面設定 (手機優先) ---
 st.set_page_config(
-    page_title="Sniper Mobile V12.1",
+    page_title="Sniper Mobile V12.2",
     page_icon="📱",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# --- CSS 魔改區 (V12.1 佈局微調) ---
+# --- CSS 魔改區 (V12.2 修復頂部觸控問題) ---
 st.markdown("""
 <style>
     .stApp { background-color: #0E1117; }
     
-    /* 1. 頂部間距微調，讓導航列更貼頂 */
+    /* 🔥 關鍵修正：加大頂部間距，避開 Streamlit 系統 Header */
     .block-container {
-        padding-top: 1rem !important;
+        padding-top: 3.5rem !important; /* 原本是 1rem，現在改大一點 */
         padding-bottom: 3rem !important;
         padding-left: 0.5rem !important;
         padding-right: 0.5rem !important;
@@ -91,9 +91,15 @@ st.markdown("""
         flex: 1 0 auto;
     }
     
-    /* 4. 隱藏 Selectbox 的 label 空間，讓它更緊湊 */
+    /* 4. 隱藏 Selectbox 的 label 空間 */
     div[data-testid="stSelectbox"] label {
         display: none;
+    }
+    
+    /* 5. 調整按鈕高度，讓它跟選單一樣高 */
+    div[data-testid="stButton"] button {
+        height: 42px; /* 手動對齊 selectbox 高度 */
+        margin-top: 0px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -202,7 +208,7 @@ def generate_ai_analysis(mode, ticker_full_name, df=None, info=None, financials=
             return response.text
     except Exception as e: return f"❌: {str(e)}"
 
-# --- 5. 導航邏輯 (V12.1: 永遠顯示導航列) ---
+# --- 5. 導航邏輯 ---
 with st.sidebar:
     st.title("⚙️ 設定")
     if "GEMINI_API_KEY" in st.secrets:
@@ -211,8 +217,7 @@ with st.sidebar:
     else:
         gemini_key = st.text_input("Gemini API Key", type="password")
 
-# 🔥 改動區：不再使用 expander，直接用 columns 顯示
-# Row 1: 刷新按鈕 (窄) + 庫存選單 (寬)
+# Row 1: 刷新 + 選單
 c_nav_1, c_nav_2 = st.columns([1, 4], gap="small")
 
 with c_nav_1:
@@ -227,19 +232,18 @@ with c_nav_2:
         selected_option = st.selectbox(
             "inventory", 
             ticker_list, 
-            label_visibility="collapsed" # 隱藏標籤，看起來更乾淨
+            label_visibility="collapsed"
         )
     else:
         st.info("無庫存")
 
-# Row 2: 手動查詢 (獨立一行，避免太擠)
+# Row 2: 查詢
 manual_input = st.text_input(
     "search", 
     placeholder="或輸入代號查詢 (如 2330)", 
     label_visibility="collapsed"
 )
 
-# 決定代號邏輯
 final_ticker_code = None
 final_ticker_name = None
 
@@ -288,7 +292,6 @@ if final_ticker_code:
         info = st.session_state.info
         last = df.iloc[-1]
         
-        # 數據處理
         def safe_num(col): 
             if col in df.columns and not pd.isna(last[col]): return last[col]
             return 0
@@ -306,7 +309,6 @@ if final_ticker_code:
         bias = safe_num('BIAS_20')
         pe = info.get('trailingPE', '-') if info else '-'
 
-        # HTML 網格佈局
         st.markdown(f"""
         <div class="metric-grid-3">
             <div class="metric-card">
