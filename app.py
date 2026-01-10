@@ -36,60 +36,108 @@ def get_yfinance_suffix(ticker):
 
 # --- 2. Page Config ---
 st.set_page_config(
-    page_title="Sniper Mobile V16.4",
-    page_icon="🎯",
+    page_title="Sniper V17 Royal",
+    page_icon="👑",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# --- CSS Styling ---
+# --- 👑 CSS Styling (Royal Edition) ---
 st.markdown("""
 <style>
-    .stApp { background-color: #0E1117; }
+    /* 1. 全局背景：皇家深紫 */
+    .stApp { 
+        background-color: #130f26; 
+        background-image: linear-gradient(180deg, #130f26 0%, #2a1b5e 100%);
+        color: #FFFFFF;
+    }
     
-    /* Hide Default Menu/Footer for App-like feel */
+    /* 隱藏預設元件 */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
 
+    /* 調整邊距，適配手機 */
     .block-container {
         padding-top: 1rem !important; 
-        padding-bottom: 3rem !important;
-        padding-left: 0.5rem !important;
-        padding-right: 0.5rem !important;
+        padding-bottom: 4rem !important;
+        padding-left: 0.8rem !important;
+        padding-right: 0.8rem !important;
     }
 
-    /* V13 Metric Grid */
-    .metric-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 6px; }
-    .metric-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 10px; }
-    .metric-card {
-        background-color: #1E2129; border: 1px solid #363B4C; border-radius: 6px; 
-        padding: 8px 4px; text-align: center; display: flex; flex-direction: column; 
-        justify-content: center; align-items: center;
+    /* 2. Expander (設定選單) 美化 */
+    div[data-testid="stExpander"] {
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid #FFD700; /* 金邊 */
+        border-radius: 12px;
     }
-    .metric-label { font-size: 12px; color: #B0B0B0; margin-bottom: 2px; }
-    .metric-value { font-size: 18px; font-weight: 600; color: #FFFFFF; line-height: 1.2; }
-    .metric-delta { font-size: 11px; margin-top: 2px; }
-    .up-color { color: #00E676; }
-    .down-color { color: #FF5252; }
-    .no-color { color: #B0B0B0; }
+    div[data-testid="stExpander"] summary {
+        color: #FFD700 !important;
+        font-weight: bold;
+    }
 
-    /* V16 Sniper Signals */
+    /* 3. Hero Section (大數字) */
+    .hero-container {
+        background: rgba(45, 31, 88, 0.6);
+        border-radius: 16px;
+        padding: 15px;
+        margin-bottom: 10px;
+        border: 1px solid rgba(255, 215, 0, 0.3); /* 淡金邊 */
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        backdrop-filter: blur(10px);
+    }
+    .hero-title { font-size: 14px; color: #B0B0E0; letter-spacing: 1px; }
+    .hero-price { font-size: 42px; font-weight: 800; color: #FFFFFF; line-height: 1.1; font-family: 'Roboto Mono', monospace; }
+    .hero-delta-up { color: #00E676; font-weight: bold; font-size: 16px; }
+    .hero-delta-down { color: #FF5252; font-weight: bold; font-size: 16px; }
+
+    /* 4. 訊號卡片 (Grid) */
     .signal-box {
-        padding: 10px; border-radius: 5px; margin-bottom: 5px;
-        font-weight: bold; text-align: center; color: white; font-size: 13px;
+        padding: 12px 5px; 
+        border-radius: 10px; 
+        margin-bottom: 8px;
+        font-weight: 600; 
+        text-align: center; 
+        color: white; 
+        font-size: 13px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
-    .signal-green { background-color: #00C853; }
-    .signal-red { background-color: #D50000; }
-    .signal-gray { background-color: #424242; }
+    .signal-green { background: linear-gradient(135deg, #00C853 0%, #009624 100%); }
+    .signal-red { background: linear-gradient(135deg, #FF5252 0%, #D50000 100%); }
+    .signal-gray { background: linear-gradient(135deg, #424242 0%, #212121 100%); }
+    .signal-gold { background: linear-gradient(135deg, #FFD700 0%, #FFA000 100%); color: #000; }
 
-    /* Tabs */
-    .stTabs [data-baseweb="tab-list"] { gap: 2px; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
-    .stTabs [data-baseweb="tab"] { height: 35px; padding: 0px 10px; font-size: 14px; flex: 1 0 auto; }
+    /* 5. Input 欄位優化 */
+    input[type="text"], input[type="password"], input[type="number"] {
+        background-color: rgba(255,255,255,0.1) !important;
+        color: white !important;
+        border: 1px solid #5C4B8C !important;
+        border-radius: 8px !important;
+    }
     
-    label { font-size: 14px !important; color: #E0E0E0 !important; }
-    div[data-testid="stSelectbox"] label { display: none; }
-    div[data-testid="stButton"] button { height: 42px; margin-top: 0px; }
+    /* 6. AI 建議區塊 (金卡) */
+    .ai-card {
+        background: linear-gradient(180deg, rgba(60, 40, 100, 0.8) 0%, rgba(30, 20, 60, 0.9) 100%);
+        border-left: 4px solid #FFD700;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 15px;
+    }
+    
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] { gap: 5px; }
+    .stTabs [data-baseweb="tab"] { 
+        height: 40px; 
+        background-color: rgba(255,255,255,0.05); 
+        border-radius: 8px;
+        color: #ddd;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: #FFD700 !important;
+        color: #000 !important;
+        font-weight: bold;
+    }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -159,7 +207,7 @@ def get_technical_data(ticker):
 # V16: Intraday Sniper Data (Hybrid: YFinance History + Twstock Realtime)
 def get_intraday_sniper_data(ticker):
     try:
-        # 1. Fetch History from YFinance (for indicators & chart)
+        # 1. Fetch History from YFinance
         suffix = get_yfinance_suffix(ticker)
         stock = yf.Ticker(ticker + suffix)
         df = stock.history(period="5d", interval="1m")
@@ -191,7 +239,6 @@ def get_intraday_sniper_data(ticker):
         try:
             realtime_data = twstock.realtime.get(ticker)
             if realtime_data['success']:
-                # Note: Twstock returns string, needs conversion
                 real_price = float(realtime_data['realtime']['latest_trade_price'])
         except:
             pass
@@ -202,16 +249,12 @@ def get_intraday_sniper_data(ticker):
         
         df_today = df[df.index.date == latest_date].copy()
         
-        # Override the last close with real-time price if available
         if real_price:
-            # Only update if the chart data is actually from today
             if latest_date == today_date:
                 df_today.iloc[-1, df_today.columns.get_loc('Close')] = real_price
-                # Update High/Low if real price exceeds bounds
                 if real_price > df_today.iloc[-1]['High']: df_today.iloc[-1, df_today.columns.get_loc('High')] = real_price
                 if real_price < df_today.iloc[-1]['Low']: df_today.iloc[-1, df_today.columns.get_loc('Low')] = real_price
             
-        # Recalculate indicators with updated price
         df_today.ta.bbands(length=20, std=2, append=True)
         df_today['Cum_Vol'] = df_today['Volume'].cumsum()
         df_today['Vol_MA5'] = df_today['Volume'].rolling(window=5).mean()
@@ -298,7 +341,7 @@ def generate_sniper_report(ticker_full_name, df, info, financials, api_key):
         progress_bar.progress(80)
 
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-2.5-flash')
+        model = genai.GenerativeModel('gemini-1.5-flash') # Force 1.5 Flash for Quota
 
         prompt = f"""
         你現在是華爾街頂尖的對沖基金交易員，代號「Sniper」。
@@ -335,25 +378,24 @@ def generate_sniper_report(ticker_full_name, df, info, financials, api_key):
         status_text.error(f"分析中斷: {str(e)}")
         return f"❌ 錯誤: {str(e)}"
 
-# 🔥🔥🔥 V16.6: AI Auto-Failover (優先用 2.5，失敗自動切換 1.5) 🔥🔥🔥
+# 🔥🔥🔥 V16.5: Unchained AI Expert Prompt 🔥🔥🔥
 def generate_sniper_advice(ticker_name, ticker_code, price, open_price, prev_close, 
                            vol_ratio, shadow_ratio, body_pct, trend_pct, 
                            v16_status, entry_cost, api_key):
     if not api_key: return "⚠️ 請輸入 API Key"
     
     genai.configure(api_key=api_key)
+    model = genai.GenerativeModel('gemini-1.5-flash')
     
     tz = pytz.timezone('Asia/Taipei')
     now = datetime.datetime.now(tz)
     current_time_str = now.strftime('%H:%M')
     
-    # 整理 V16 的檢測結果
     status_text = ""
     for k, v in v16_status.items():
         icon = "✅" if v else "❌"
         status_text += f"- {k}: {icon}\n"
 
-    # [使用者持倉狀態]
     if entry_cost > 0:
         roi = ((price - entry_cost) / entry_cost) * 100
         position_status = f"🔴 持倉中 | 成本: {entry_cost} | 損益: {roi:.2f}%"
@@ -382,52 +424,33 @@ def generate_sniper_advice(ticker_name, ticker_code, price, open_price, prev_clo
     使用者已經看得到上面的紅綠燈號了，**不需要你複述規則**。
     {focus}
     
-    請給出充滿洞見的分析 (Markdown)：
+    請給出充滿洞見的分析 (Markdown)，請使用條列式重點，語氣專業果斷：
     ### 🧠 老手觀點 ({current_time_str})
     **1. 盤面解讀**:
-       * (請解讀主力意圖：這是真突破、假拉抬、還是洗盤？目前的上影線或量能代表什麼心理狀態？)
+       * (請解讀主力意圖：這是真突破、假拉抬、還是洗盤？)
     **2. 操作建議 (自定義)**:
-       * 🎯 決策: **[強力買進 / 嘗試單 / 觀望 / 續抱 / 減碼 / 出清]** (請依據你的經驗給出最適合的建議，可與 V16 訊號不同)
-       * 💡 邏輯: (告訴我為什麼。例如：「雖然 V16 亮紅燈，但遇到前高壓力，建議觀望」或「V16 雖然量能不足，但型態完美，可嘗試佈局」)
+       * 🎯 決策: **[強力買進 / 嘗試單 / 觀望 / 續抱 / 減碼 / 出清]** (請明確選一個)
+       * 💡 邏輯: (告訴我為什麼)
     **3. 關鍵點位**:
-       * 🛡️ 防守: (給出一個你認為最安全的防守價，不一定要照公式)
-       * 🚀 目標: (若看好，短線壓力看哪裡)
+       * 🛡️ 防守: (給出一個你認為最安全的防守價)
+       * 🚀 目標: (短線壓力看哪裡)
     **4. 一句話點評**: (犀利、直接的總結)
     """
-
-    # --- 核心修改：自動切換模型機制 ---
     try:
-        # 第一優先：嘗試使用 Gemini 2.5 Flash (聰明但有次數限制)
-        model_25 = genai.GenerativeModel('gemini-2.5-flash')
-        response = model_25.generate_content(prompt)
-        return f"⚡ **[Gemini 2.5]** 分析報告：\n\n{response.text}"
-        
-    except Exception as e_25:
-        # 如果 2.5 失敗 (例如 429 Too Many Requests)，自動切換到 1.5
-        error_msg = str(e_25)
-        # 可以在這裡印出錯誤日誌方便除錯
-        # print(f"Gemini 2.5 failed: {error_msg}, switching to 1.5...")
-        
-        try:
-            # 第二優先：使用 Gemini 1.5 Flash (穩定且額度高)
-            model_15 = genai.GenerativeModel('gemini-1.5-flash')
-            response = model_15.generate_content(prompt)
-            return f"🛡️ **[Gemini 1.5 備援]** 分析報告 (2.5 忙碌中)：\n\n{response.text}"
-            
-        except Exception as e_15:
-            # 如果連 1.5 都掛了，才回報錯誤
-            return f"❌ AI 系統暫時無法連線 (兩道防線皆失敗): {e_15}"
+        response = model.generate_content(prompt)
+        return response.text
+    except Exception as e: return f"AI 思考中斷: {e}"
 
-# --- 5. Main Logic (Mobile UI Optimized) ---
+# --- 5. Main Logic (Royal UI) ---
 
-# Top Expander for Settings (Replaces Sidebar)
-with st.expander("⚙️ 模式切換與設定 (點擊展開)", expanded=False):
+# Top Expander for Settings (Styled)
+with st.expander("⚙️ 皇家設定 (Settings)", expanded=False):
     c_set1, c_set2 = st.columns([2, 1])
     
     with c_set1:
         app_mode = st.radio(
-            "功能模式", 
-            ["📊 庫存/分析 (V13)", "⚡ AI 短線狙擊 (V16)"], 
+            "Mode", 
+            ["📊 庫存 (Inventory)", "⚡ 狙擊 (Sniper V17)"], 
             horizontal=True,
             label_visibility="collapsed"
         )
@@ -435,7 +458,7 @@ with st.expander("⚙️ 模式切換與設定 (點擊展開)", expanded=False):
     with c_set2:
         if "GEMINI_API_KEY" in st.secrets:
             gemini_key = st.secrets["GEMINI_API_KEY"]
-            st.success("API Key 鎖定")
+            st.success("API 鎖定")
         else:
             gemini_key = st.text_input("API Key", type="password", placeholder="Gemini Key")
 
@@ -451,9 +474,9 @@ def update_ticker_from_select():
         st.session_state.last_sniper_code = code
 
 # ==========================================
-# Mode 1: Inventory/Analysis (V13)
+# Mode 1: Inventory/Analysis
 # ==========================================
-if app_mode == "📊 庫存/分析 (V13)":
+if app_mode == "📊 庫存 (Inventory)":
     c_nav_1, c_nav_2 = st.columns([1, 4], gap="small")
     with c_nav_1:
         if st.button("🔄", use_container_width=True):
@@ -467,7 +490,7 @@ if app_mode == "📊 庫存/分析 (V13)":
             key="inventory_select",
             on_change=update_ticker_from_select,
             index=None,
-            placeholder="📦 從庫存選擇 (點擊自動填入)",
+            placeholder="📦 從庫存選擇",
             label_visibility="collapsed"
         )
 
@@ -510,7 +533,8 @@ if app_mode == "📊 庫存/分析 (V13)":
                 st.session_state.df = get_technical_data(final_ticker_code)
                 st.session_state.info = get_company_info_safe(final_ticker_code)
 
-        st.caption(f"📊 {final_ticker_name}")
+        # Hero Style Title
+        st.markdown(f"<div style='color:#FFD700; font-size:20px; font-weight:bold; margin-bottom:10px;'>📊 {final_ticker_name}</div>", unsafe_allow_html=True)
 
         if st.session_state.df is None:
             st.error("查無資料")
@@ -528,9 +552,19 @@ if app_mode == "📊 庫存/分析 (V13)":
             change = close - prev_close
             pct = (change / prev_close) * 100
             
-            color_cls = "up-color" if change > 0 else "down-color" if change < 0 else "no-color"
+            color_cls = "hero-delta-up" if change > 0 else "hero-delta-down" if change < 0 else "no-color"
             sign = "+" if change > 0 else ""
             
+            # 👑 New Hero Section for V13
+            st.markdown(f"""
+            <div class="hero-container">
+                <div class="hero-title">CURRENT PRICE</div>
+                <div class="hero-price">{close:,.0f}</div>
+                <div class="{color_cls}">{sign}{change:.1f} ({sign}{pct:.2f}%)</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # ... Keep Metrics as fallback detailed info ...
             mfi = safe_num('MFI_14')
             rsi = safe_num('RSI_14')
             bias = safe_num('BIAS_20')
@@ -539,31 +573,16 @@ if app_mode == "📊 庫存/分析 (V13)":
             st.markdown(f"""
             <div class="metric-grid-3">
                 <div class="metric-card">
-                    <div class="metric-label">現價</div>
-                    <div class="metric-value {color_cls}">{close:.0f}</div>
-                    <div class="metric-delta {color_cls}">{sign}{pct:.2f}%</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">MFI (資金)</div>
+                    <div class="metric-label">MFI</div>
                     <div class="metric-value">{mfi:.0f}</div>
-                    <div class="metric-delta no-color">流量</div>
                 </div>
                 <div class="metric-card">
-                    <div class="metric-label">RSI (強弱)</div>
+                    <div class="metric-label">RSI</div>
                     <div class="metric-value">{rsi:.0f}</div>
-                    <div class="metric-delta no-color">動能</div>
                 </div>
-            </div>
-            <div class="metric-grid-2">
                 <div class="metric-card">
-                    <div class="metric-label">BIAS (乖離率)</div>
+                    <div class="metric-label">乖離率</div>
                     <div class="metric-value">{bias:.2f}%</div>
-                    <div class="metric-delta">20日</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">PE (本益比)</div>
-                    <div class="metric-value">{pe}</div>
-                    <div class="metric-delta">估值</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -572,25 +591,37 @@ if app_mode == "📊 庫存/分析 (V13)":
 
             with tabs[0]:
                 fig = make_subplots(rows=2, cols=1, shared_xaxes=True, row_width=[0.2, 0.7], vertical_spacing=0.03)
-                fig.add_trace(go.Candlestick(x=df.index, open=df['Open'], high=df['High'], low=df['Low'], close=df['Close'], name='K'), row=1, col=1)
-                fig.add_trace(go.Scatter(x=df.index, y=df['Close'].rolling(20).mean(), line=dict(color='orange', width=1), name='MA20'), row=1, col=1)
-                if 'OBV' in df.columns: fig.add_trace(go.Scatter(x=df.index, y=df['OBV'], name='OBV', line=dict(color='cyan')), row=2, col=1)
-                fig.update_layout(height=380, template="plotly_dark", xaxis_rangeslider_visible=False, margin=dict(l=0,r=0,t=5,b=0), legend=dict(orientation="h", y=1, x=0, bgcolor='rgba(0,0,0,0)'))
-                st.plotly_chart(fig, use_container_width=True)
+                # 👑 Royal Chart Style
+                fig.add_trace(go.Candlestick(x=df.index, open=df['Open'], high=df['High'], low=df['Low'], close=df['Close'], name='K', increasing_line_color='#00E676', decreasing_line_color='#FF5252'), row=1, col=1)
+                fig.add_trace(go.Scatter(x=df.index, y=df['Close'].rolling(20).mean(), line=dict(color='#FFD700', width=1), name='MA20'), row=1, col=1)
+                if 'OBV' in df.columns: fig.add_trace(go.Scatter(x=df.index, y=df['OBV'], name='OBV', line=dict(color='#00E5FF')), row=2, col=1)
+                
+                # Update Layout for Royal Theme
+                fig.update_layout(
+                    height=380, 
+                    template="plotly_dark", 
+                    paper_bgcolor='rgba(0,0,0,0)', 
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    xaxis_rangeslider_visible=False, 
+                    margin=dict(l=0,r=0,t=5,b=0), 
+                    legend=dict(orientation="h", y=1, x=0, bgcolor='rgba(0,0,0,0)')
+                )
+                # 🔥 FIX SCROLL TRAP
+                st.plotly_chart(fig, use_container_width=True, config={'scrollZoom': False, 'staticPlot': False})
 
             with tabs[1]:
                 fig2 = make_subplots(rows=2, cols=1, shared_xaxes=True)
                 if 'MACDh_12_26_9' in df.columns: fig2.add_trace(go.Bar(x=df.index, y=df['MACDh_12_26_9'], marker_color='#29B6F6', name='MACD'), row=1, col=1)
                 if 'STOCHk_9_3_3' in df.columns:
-                    fig2.add_trace(go.Scatter(x=df.index, y=df['STOCHk_9_3_3'], line=dict(color='yellow', width=1), name='K'), row=2, col=1)
-                    fig2.add_trace(go.Scatter(x=df.index, y=df['STOCHd_9_3_3'], line=dict(color='red', width=1), name='D'), row=2, col=1)
-                fig2.update_layout(height=350, template="plotly_dark", margin=dict(l=0,r=0,t=10,b=0), showlegend=False)
-                st.plotly_chart(fig2, use_container_width=True)
+                    fig2.add_trace(go.Scatter(x=df.index, y=df['STOCHk_9_3_3'], line=dict(color='#FFD700', width=1), name='K'), row=2, col=1)
+                    fig2.add_trace(go.Scatter(x=df.index, y=df['STOCHd_9_3_3'], line=dict(color='#FF5252', width=1), name='D'), row=2, col=1)
+                fig2.update_layout(height=350, template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', margin=dict(l=0,r=0,t=10,b=0), showlegend=False)
+                st.plotly_chart(fig2, use_container_width=True, config={'scrollZoom': False})
 
             st.markdown("---") 
             col_ai_btn, col_ai_res = st.columns([1, 4])
             with col_ai_btn:
-                if st.button("🚀 AI 全面狙擊", use_container_width=True):
+                if st.button("🚀 分析", use_container_width=True):
                     if st.session_state.financials is None:
                         with st.spinner("下載財報中..."):
                             inc, bal, cash = get_financial_data(final_ticker_code)
@@ -600,15 +631,15 @@ if app_mode == "📊 庫存/分析 (V13)":
                     st.rerun()
 
             if st.session_state.sniper_report:
-                st.markdown(st.session_state.sniper_report)
-                if st.button("🗑️ 清除報告", key="cls_rpt"):
+                st.markdown(f"<div class='ai-card'>{st.session_state.sniper_report}</div>", unsafe_allow_html=True)
+                if st.button("🗑️ 清除", key="cls_rpt"):
                     st.session_state.sniper_report = None
                     st.rerun()
 
 # ==========================================
-# Mode 2: AI Sniper (V16 Hybrid Realtime)
+# Mode 2: AI Sniper (V17 Royal Edition)
 # ==========================================
-elif app_mode == "⚡ AI 短線狙擊 (V16)":
+elif app_mode == "⚡ 狙擊 (Sniper V17)":
     
     if 'last_refresh' not in st.session_state:
         st.session_state.last_refresh = time.time()
@@ -618,16 +649,23 @@ elif app_mode == "⚡ AI 短線狙擊 (V16)":
 
     tz = pytz.timezone('Asia/Taipei')
     now_tw = datetime.datetime.now(tz)
-    st.caption(f"⚡ V16.4 狙擊模式 | Auto: 60s | Last: {now_tw.strftime('%H:%M:%S')} (TW)")
+    
+    # 👑 Royal Header
+    st.markdown(f"""
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span style="color:#FFD700; font-weight:bold; font-size:14px;">⚡ SNIPER V17</span>
+        <span style="color:#888; font-size:12px;">{now_tw.strftime('%H:%M:%S')}</span>
+    </div>
+    """, unsafe_allow_html=True)
 
     col_in1, col_in2 = st.columns([2, 1])
     with col_in1:
-        sniper_input = st.text_input("🎯 狙擊目標 (Stock)", value=st.session_state.active_ticker, placeholder="輸入代號")
+        sniper_input = st.text_input("Stock Code", value=st.session_state.active_ticker, placeholder="代號", label_visibility="collapsed")
         if sniper_input != st.session_state.active_ticker:
             st.session_state.active_ticker = sniper_input
 
     with col_in2:
-        entry_cost = st.number_input("💲 進場成本 (選填)", value=0.0, step=0.5, placeholder="成本")
+        entry_cost = st.number_input("Cost", value=0.0, step=0.5, placeholder="成本", label_visibility="collapsed")
 
     target_code = sniper_input.strip()
 
@@ -641,7 +679,7 @@ elif app_mode == "⚡ AI 短線狙擊 (V16)":
     try: target_name = twstock.codes[target_code].name
     except: target_name = target_code
     
-    # Fetch Data (Hybrid: YF History + Twstock Realtime)
+    # Fetch Data
     df_1m, yesterday_vol, prev_close, real_price = get_intraday_sniper_data(target_code)
     
     # Data Validation
@@ -650,160 +688,159 @@ elif app_mode == "⚡ AI 短線狙擊 (V16)":
         latest_data_date = df_1m.index[-1].date()
         today_date = now_tw.date()
         
-        # If Twstock returned a real price, use it
         if real_price:
             curr_price = real_price
             is_data_valid = True
         else:
-            # Fallback to chart data
             curr_price = df_1m.iloc[-1]['Close']
             if latest_data_date == today_date:
                 is_data_valid = True
             else:
-                st.warning(f"⚠️ 圖表數據為 {latest_data_date}，且無法取得即時報價。")
-                st.info("原因：非開盤時間或 API 延遲。")
+                st.warning(f"⚠️ 歷史數據: {latest_data_date}")
     
     if df_1m is not None and not df_1m.empty and prev_close is not None:
         last_bar = df_1m.iloc[-1]
         if not real_price: curr_price = last_bar['Close']
         open_price = df_1m.iloc[0]['Open']
         
-        # --- V16.3 Core Logic (Correct Calculation + Safe Filter) ---
-
-        # 1. Base Metrics
+        # --- V16.3 Logic ---
         trend_pct = ((curr_price - prev_close) / prev_close) * 100 
-        
-        # [Fix] Abs calculation for display accuracy (handles Black Candle)
         body_delta = curr_price - open_price
         body_len = abs(body_delta)
-        
-        # Body Pct (Signed) for Qualification Filter
         body_pct = (body_delta / prev_close) * 100 
         
-        # Upper Shadow (Logic: High - Max(Open, Close))
-        # Note: If real_price > chart high, we assume real_price is new high
         current_high = max(last_bar['High'], curr_price)
         upper_shadow = current_high - max(open_price, curr_price)
-        
-        # [Fix] Use 0.01 to allow calculation for display, BUT Safety is ensured by cond_qualify
         shadow_ratio = (upper_shadow / body_len) if body_len > 0.01 else 99.9 
         
         cum_vol = last_bar['Cum_Vol']
         vol_ratio = (cum_vol / yesterday_vol) * 100 if yesterday_vol > 0 else 0
 
-        # 2. Time & Volume Filters
         current_time = now_tw.time()
-        
         t_0905 = datetime.time(9, 5)
         t_0915 = datetime.time(9, 15)
         t_1000 = datetime.time(10, 0)
         t_1030 = datetime.time(10, 30)
 
         cond_vol = False
-        vol_msg = "量能不足"
+        vol_msg = "量縮"
         
         if current_time < t_0905:
             cond_vol = False
-            vol_msg = "⛔ 09:05前避險"
+            vol_msg = "避險"
         elif current_time < t_0915:
             cond_vol = vol_ratio >= 10
-            vol_msg = f"> 10% ({vol_ratio:.1f}%)"
+            vol_msg = f"{vol_ratio:.0f}%"
         elif current_time < t_1000:
             cond_vol = vol_ratio >= 20
-            vol_msg = f"> 20% ({vol_ratio:.1f}%)"
+            vol_msg = f"{vol_ratio:.0f}%"
         else:
             cond_vol = vol_ratio >= 30
-            vol_msg = f"> 30% ({vol_ratio:.1f}%)"
+            vol_msg = f"{vol_ratio:.0f}%"
             
-        # 3. Qualification & Shadow Filter (Strict Logic)
         cond_qualify = (curr_price > open_price) and (2 <= trend_pct <= 8) and (body_pct >= 0.2)
         cond_shadow = shadow_ratio <= 0.5
         cond_time = current_time <= t_1030
-
-        # 4. Final Signal
         final_signal = cond_qualify and cond_shadow and cond_vol and cond_time and is_data_valid
 
-        # 5. Trailing Stop Logic (UI Display)
         cost_base = entry_cost if entry_cost > 0 else curr_price
         roi_pct = ((curr_price - cost_base) / cost_base) * 100
         
-        trailing_msg = "Phase 1: 蓄力"
-        trailing_sl = cost_base * 0.975 # Default Phase 1
+        trailing_msg = "蓄力"
+        trailing_sl = cost_base * 0.975 
         
-        if roi_pct > 5: # Phase 3
-            trailing_msg = "Phase 3: 🚀 鎖利"
-            trailing_sl = curr_price * 0.975 # Trail 2.5%
-        elif roi_pct > 2: # Phase 2
-            trailing_msg = "Phase 2: 🛡️ 保本"
-            trailing_sl = cost_base * 1.005 # Cost + 0.5%
+        if roi_pct > 5:
+            trailing_msg = "鎖利"
+            trailing_sl = curr_price * 0.975
+        elif roi_pct > 2:
+            trailing_msg = "保本"
+            trailing_sl = cost_base * 1.005
+
+        # 👑 HERO PRICE SECTION (Royal Style)
+        color_cls = "hero-delta-up" if trend_pct > 0 else "hero-delta-down" if trend_pct < 0 else "no-color"
+        sign = "+" if trend_pct > 0 else ""
         
-        # --- UI Display ---
+        st.markdown(f"""
+        <div class="hero-container">
+            <div style="display:flex; justify-content:space-between;">
+                <span class="hero-title">{target_name}</span>
+                <span style="color:#FFD700; font-weight:bold;">VIP</span>
+            </div>
+            <div class="hero-price">{curr_price:,.1f}</div>
+            <div class="{color_cls}">{sign}{trend_pct:.2f}% <span style="font-size:12px; color:#888; margin-left:10px;">Vol: {cum_vol/1000:.0f}K</span></div>
+        </div>
+        """, unsafe_allow_html=True)
         
+        # --- UI Grid ---
         c1, c2, c3, c4 = st.columns(4)
-        def signal_html(text, is_pass, fail_color="signal-gray"):
+        def signal_html(text, subtext, is_pass, fail_color="signal-gray"):
             color = "signal-green" if is_pass else fail_color
-            return f'<div class="signal-box {color}">{text}</div>'
+            return f'<div class="signal-box {color}">{text}<br><span style="font-size:10px; opacity:0.8;">{subtext}</span></div>'
 
         with c1: 
-            p_text = f"資格審查<br>{trend_pct:.1f}% / 實{body_pct:.1f}%"
-            st.markdown(signal_html(p_text, cond_qualify), unsafe_allow_html=True)
-            
+            st.markdown(signal_html("資格", f"{body_pct:.1f}%", cond_qualify), unsafe_allow_html=True)
         with c2: 
-            s_text = f"避雷針<br>R: {shadow_ratio:.1f}"
-            st.markdown(signal_html(s_text, cond_shadow, "signal-red"), unsafe_allow_html=True)
-            
+            st.markdown(signal_html("避雷", f"{shadow_ratio:.1f}", cond_shadow, "signal-red"), unsafe_allow_html=True)
         with c3: 
-            st.markdown(signal_html(f"動態量能<br>{vol_msg}", cond_vol), unsafe_allow_html=True)
-            
+            st.markdown(signal_html("量能", vol_msg, cond_vol), unsafe_allow_html=True)
         with c4: 
-            t_text = "時間窗口<br>OK" if cond_time else "⛔ 逾時"
-            st.markdown(signal_html(t_text, cond_time, "signal-gray"), unsafe_allow_html=True)
+            t_stat = "OK" if cond_time else "逾時"
+            st.markdown(signal_html("時窗", t_stat, cond_time, "signal-gray"), unsafe_allow_html=True)
 
         if not is_data_valid:
              st.error("⛔ 資料過時或無法取得即時報價，請稍後再試。")
         else:
-            if final_signal: st.success(f"🎯 V16 訊號確認！狙擊 {target_name}")
-            elif not cond_qualify: st.warning("⚠️ 資格不符：需 紅K + 漲幅2~8% + 實體>0.2%")
-            elif not cond_shadow: st.warning("⚠️ 避雷針警報：上影線過長，賣壓沈重")
-            elif not cond_vol: st.info(f"⏳ 等待補量：{vol_msg}")
+            if final_signal: 
+                st.markdown(f'<div class="signal-box signal-gold">🎯 狙擊訊號確認</div>', unsafe_allow_html=True)
+            elif not cond_qualify: st.warning("⚠️ 資格不符")
+            elif not cond_shadow: st.warning("⚠️ 避雷針過長")
+            elif not cond_vol: st.info(f"⏳ 等待補量")
             else: st.info("⏳ 監控中...")
 
         # Chart
         fig = make_subplots(rows=2, cols=1, shared_xaxes=True, row_width=[0.2, 0.7], vertical_spacing=0.02)
-        fig.add_trace(go.Candlestick(x=df_1m.index, open=df_1m['Open'], high=df_1m['High'], low=df_1m['Low'], close=df_1m['Close'], name='Price'), row=1, col=1)
+        fig.add_trace(go.Candlestick(x=df_1m.index, open=df_1m['Open'], high=df_1m['High'], low=df_1m['Low'], close=df_1m['Close'], name='Price', increasing_line_color='#00E676', decreasing_line_color='#FF5252'), row=1, col=1)
         
         if 'BBU_20_2.0' in df_1m.columns:
-            fig.add_trace(go.Scatter(x=df_1m.index, y=df_1m['BBU_20_2.0'], line=dict(color='yellow', width=1), name='Upper'), row=1, col=1)
-            fig.add_trace(go.Scatter(x=df_1m.index, y=df_1m['BBM_20_2.0'], line=dict(color='orange', width=1), name='MA20'), row=1, col=1)
+            fig.add_trace(go.Scatter(x=df_1m.index, y=df_1m['BBU_20_2.0'], line=dict(color='#FFD700', width=1), name='Upper'), row=1, col=1)
+            fig.add_trace(go.Scatter(x=df_1m.index, y=df_1m['BBM_20_2.0'], line=dict(color='#FF9100', width=1), name='MA20'), row=1, col=1)
         
         if entry_cost > 0:
-            fig.add_hline(y=entry_cost, line_dash="dash", line_color="white", row=1, col=1, annotation_text="成本")
-            fig.add_hline(y=trailing_sl, line_color="#FF00FF", row=1, col=1, annotation_text="停損/利")
+            fig.add_hline(y=entry_cost, line_dash="dash", line_color="white", row=1, col=1)
+            fig.add_hline(y=trailing_sl, line_color="#FF00FF", row=1, col=1)
 
         colors = ['red' if r['Open'] - r['Close'] >= 0 else 'green' for i, r in df_1m.iterrows()]
         fig.add_trace(go.Bar(x=df_1m.index, y=df_1m['Volume'], marker_color=colors, name='Vol'), row=2, col=1)
-        fig.update_layout(height=400, template="plotly_dark", margin=dict(l=0,r=0,t=0,b=0), xaxis_rangeslider_visible=False, showlegend=False)
-        st.plotly_chart(fig, use_container_width=True)
+        
+        fig.update_layout(
+            height=400, 
+            template="plotly_dark", 
+            paper_bgcolor='rgba(0,0,0,0)', 
+            plot_bgcolor='rgba(0,0,0,0)',
+            margin=dict(l=0,r=0,t=0,b=0), 
+            xaxis_rangeslider_visible=False, 
+            showlegend=False
+        )
+        # 🔥 FIX SCROLL TRAP
+        st.plotly_chart(fig, use_container_width=True, config={'scrollZoom': False, 'staticPlot': False})
         
         st.markdown(f"""
         <div class="metric-grid-2">
-            <div class="metric-card"><div class="metric-label">策略階段</div><div class="metric-value up-color">{trailing_msg}</div></div>
-            <div class="metric-card"><div class="metric-label">執行點位 (Stop)</div><div class="metric-value down-color">{trailing_sl:.1f}</div></div>
+            <div class="metric-card"><div class="metric-label">策略</div><div class="metric-value up-color">{trailing_msg}</div></div>
+            <div class="metric-card"><div class="metric-label">防守</div><div class="metric-value down-color">{trailing_sl:.1f}</div></div>
         </div>
         """, unsafe_allow_html=True)
 
-        st.markdown("---")
-        
         if 'v14_sniper_advice' not in st.session_state:
             st.session_state.v14_sniper_advice = None
 
-        if st.button("🤖 呼叫 V16 狙擊顧問", use_container_width=True):
-            with st.spinner("V16 邏輯運算中..."):
+        if st.button("🤖 呼叫顧問 (AI)", use_container_width=True):
+            with st.spinner("V16 運算中..."):
                 v16_status = {
-                    "資格審查 (Trend 2-8% + Body > 0.2%)": cond_qualify,
-                    "避雷針濾網 (Shadow < 0.5 Body)": cond_shadow,
-                    "動態量能 (分時門檻)": cond_vol,
-                    "時間窗口 (09:05-10:30)": cond_time
+                    "資格": cond_qualify,
+                    "避雷": cond_shadow,
+                    "量能": cond_vol,
+                    "時窗": cond_time
                 }
                 
                 advice = generate_sniper_advice(
@@ -815,7 +852,7 @@ elif app_mode == "⚡ AI 短線狙擊 (V16)":
                 st.session_state.v14_sniper_advice = advice
         
         if st.session_state.v14_sniper_advice:
-            st.markdown(st.session_state.v14_sniper_advice)
+            st.markdown(f"<div class='ai-card'>{st.session_state.v14_sniper_advice}</div>", unsafe_allow_html=True)
 
     else:
         st.warning("今日尚未開盤或無資料")
