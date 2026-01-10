@@ -335,26 +335,25 @@ def generate_sniper_report(ticker_full_name, df, info, financials, api_key):
         status_text.error(f"分析中斷: {str(e)}")
         return f"❌ 錯誤: {str(e)}"
 
-# 🔥🔥🔥 V16.5: Unchained AI Expert Prompt (釋放 AI 判斷力) 🔥🔥🔥
+# 🔥🔥🔥 V16.6: AI Auto-Failover (優先用 2.5，失敗自動切換 1.5) 🔥🔥🔥
 def generate_sniper_advice(ticker_name, ticker_code, price, open_price, prev_close, 
                            vol_ratio, shadow_ratio, body_pct, trend_pct, 
                            v16_status, entry_cost, api_key):
     if not api_key: return "⚠️ 請輸入 API Key"
     
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-2.5-flash')
     
     tz = pytz.timezone('Asia/Taipei')
     now = datetime.datetime.now(tz)
     current_time_str = now.strftime('%H:%M')
     
-    # 整理 V16 的硬體檢測結果供 AI 參考 (但不強制它遵守)
+    # 整理 V16 的檢測結果
     status_text = ""
     for k, v in v16_status.items():
         icon = "✅" if v else "❌"
         status_text += f"- {k}: {icon}\n"
 
-    # [New] Logic for User Position
+    # [使用者持倉狀態]
     if entry_cost > 0:
         roi = ((price - entry_cost) / entry_cost) * 100
         position_status = f"🔴 持倉中 | 成本: {entry_cost} | 損益: {roi:.2f}%"
@@ -395,10 +394,29 @@ def generate_sniper_advice(ticker_name, ticker_code, price, open_price, prev_clo
        * 🚀 目標: (若看好，短線壓力看哪裡)
     **4. 一句話點評**: (犀利、直接的總結)
     """
+
+    # --- 核心修改：自動切換模型機制 ---
     try:
-        response = model.generate_content(prompt)
-        return response.text
-    except Exception as e: return f"AI 思考中斷: {e}"
+        # 第一優先：嘗試使用 Gemini 2.5 Flash (聰明但有次數限制)
+        model_25 = genai.GenerativeModel('gemini-2.5-flash')
+        response = model_25.generate_content(prompt)
+        return f"⚡ **[Gemini 2.5]** 分析報告：\n\n{response.text}"
+        
+    except Exception as e_25:
+        # 如果 2.5 失敗 (例如 429 Too Many Requests)，自動切換到 1.5
+        error_msg = str(e_25)
+        # 可以在這裡印出錯誤日誌方便除錯
+        # print(f"Gemini 2.5 failed: {error_msg}, switching to 1.5...")
+        
+        try:
+            # 第二優先：使用 Gemini 1.5 Flash (穩定且額度高)
+            model_15 = genai.GenerativeModel('gemini-1.5-flash')
+            response = model_15.generate_content(prompt)
+            return f"🛡️ **[Gemini 1.5 備援]** 分析報告 (2.5 忙碌中)：\n\n{response.text}"
+            
+        except Exception as e_15:
+            # 如果連 1.5 都掛了，才回報錯誤
+            return f"❌ AI 系統暫時無法連線 (兩道防線皆失敗): {e_15}"
 
 # --- 5. Main Logic (Mobile UI Optimized) ---
 
